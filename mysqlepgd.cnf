@@ -1,9 +1,8 @@
 [mysqld]
-#log-bin-trust-function-creators = 1
-#collation-server = utf8_unicode_ci
-#init-connect='SET NAMES utf8'
-#character-set-server = utf8
-max_allowed_packet=64M
-#connect_timeout = 600
-#net_read_timeout = 600
-#net_write_timeout = 600
+max_allowed_packet=256M
+wait_timeout = 1200
+connect_timeout = 600
+net_read_timeout = 600
+net_write_timeout = 600
+innodb_lock_wait_timeout = 100
+innodb_rollback_on_timeout = 1
