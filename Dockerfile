@@ -39,4 +39,4 @@ ENV LANG="de_DE.UTF-8" \
     LC_ALL="de_DE.UTF-8" \
     EPGD_RECOMMEND="yes"
 
-ENTRYPOINT ["mariadb-epglv.sh"]
+ENTRYPOINT ["/mariadb-epglv.sh"]
