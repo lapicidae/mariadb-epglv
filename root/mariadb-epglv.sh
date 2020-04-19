@@ -1,5 +1,4 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
 
 cnf="/etc/mysql/conf.d/mysqlepgd.cnf"
 
@@ -12,6 +11,4 @@ else
 	fi
 fi
 
-exec /docker-entrypoint.sh
-
-exec "$@"
+exec /docker-entrypoint.sh "$@"
