@@ -36,5 +36,5 @@ ENV LANG de_DE.UTF-8
 ENV LANGUAGE de_DE:de  
 ENV LC_ALL de_DE.UTF-8
 
-#COPY mysqlepgd.cnf /etc/mysql/conf.d/
+COPY mysqlepgd.cnf /etc/mysql/conf.d/
 COPY mysql-first-time.sql /docker-entrypoint-initdb.d/
