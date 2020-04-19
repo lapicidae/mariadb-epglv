@@ -2,12 +2,14 @@ FROM mariadb:latest
 
 WORKDIR /tmp
 
-RUN sed -i 'H;1h;$!d;G' /etc/apt/sources.list.d/mariadb.list &&\
+COPY root/ /
+
+RUN sed -i 'H;1h;$!d;G' /etc/apt/sources.list.d/mariadb.list && \
     sed -i '2s/deb/deb-src/' /etc/apt/sources.list.d/mariadb.list && \
       \
-    apt-get update -qq &&\
-    apt-get install -qy apt-utils &&\
-    #DEBIAN_FRONTEND=noninteractive apt-get upgrade -qy &&\
+    apt-get update -qq && \
+    apt-get install -qy apt-utils && \
+    #DEBIAN_FRONTEND=noninteractive apt-get upgrade -qy && \
       \
     apt-get install -qy locales &&\
     echo "Europe/Berlin" > /etc/timezone &&\
@@ -26,14 +28,15 @@ RUN sed -i 'H;1h;$!d;G' /etc/apt/sources.list.d/mariadb.list &&\
     apt-get remove -qy \
 	    apt-utils build-essential git \
 		  libcrypto++-dev libssl-dev zlib1g-dev \
-	    libmariadb-dev libmariadbd-dev libmariadb-dev-compat &&\
-    apt-get purge -qy --auto-remove -o APT::AutoRemove::RecommendsImportant=false &&\
-    apt-get clean &&\
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /etc/ssl/certs
+	    libmariadb-dev libmariadbd-dev libmariadb-dev-compat && \
+    apt-get purge -qy --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /etc/ssl/certs && \
+    chmod 755 /mariadb-epglv.sh
 
 ENV LANG="de_DE.UTF-8" \
     LANGUAGE="de_DE:de" \
     LC_ALL="de_DE.UTF-8" \
     EPGD_RECOMMEND="yes"
 
-COPY root/ /
+ENTRYPOINT ["mariadb-epglv.sh"]
