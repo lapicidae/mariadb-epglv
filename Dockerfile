@@ -31,10 +31,9 @@ RUN sed -i 'H;1h;$!d;G' /etc/apt/sources.list.d/mariadb.list &&\
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /etc/ssl/certs
 
+ENV LANG="de_DE.UTF-8" \
+    LANGUAGE="de_DE:de" \
+    LC_ALL="de_DE.UTF-8" \
+    EPGD_RECOMMEND="yes"
 
-ENV LANG de_DE.UTF-8  
-ENV LANGUAGE de_DE:de  
-ENV LC_ALL de_DE.UTF-8
-
-COPY mysqlepgd.cnf /etc/mysql/conf.d/
-COPY mysql-first-time.sql /docker-entrypoint-initdb.d/
+COPY root/ /
