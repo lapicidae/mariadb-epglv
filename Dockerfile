@@ -21,6 +21,7 @@ RUN sed -i 'H;1h;$!d;G' /etc/apt/sources.list.d/mariadb.list && \
       \
     cd /tmp && \
     git clone https://projects.vdr-developer.org/git/vdr-epg-daemon.git vdr-epg-daemon && \
+    cp -a vdr-epg-daemon/scripts/. /usr/local/bin/ && \
     cd vdr-epg-daemon/epglv && \
 	  make all && \
 	  make install && \
