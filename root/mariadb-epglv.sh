@@ -26,7 +26,18 @@ User gid:    $(id -g mysql)
 
 if [ "$EPGD_RECOMMEND" = "yes" ]; then
 	echo ">>>>>>>>>> pushing epgd recommend settings to $cnf <<<<<<<<<<"
-	echo -e "[mysqld]\nlog_warnings=1\nmax_allowed_packet=128M\nwait_timeout=86400\nconnect_timeout=600\ninteractive_timeout=86400\nnet_read_timeout=600\nnet_write_timeout=180\ninnodb_lock_wait_timeout=300\ninnodb_rollback_on_timeout=1" > $cnf
+	cat <<- EOF > $cnf
+	[mysqld]
+	log_warnings=$MARIADB_LOG_WARNINGS
+	max_allowed_packet=$MARIADB_MAX_ALLOWED_PACKET
+	wait_timeout=$MARIADB_WAIT_TIMEOUT
+	connect_timeout=$MARIADB_CONNECT_TIMEOUT
+	interactive_timeout=$MARIADB_INTERACTIVE_TIMEOUT
+	net_read_timeout=$MARIADB_NET_READ_TIMEOUT
+	net_write_timeout=$MARIADB_NET_WRITE_TIMEOUT
+	innodb_lock_wait_timeout=$MARIADB_INNODB_LOCK_WAIT_TIMEOUT
+	innodb_rollback_on_timeout=$MARIADB_INNODB_ROLLBACK_ON_TIMEOUT
+	EOF
 else
 	if [ -f "$cnf" ]; then
 		rm -f $cnf
