@@ -33,20 +33,22 @@ RUN sed -i 'H;1h;$!d;G' /etc/apt/sources.list.d/mariadb.list && \
     apt-get purge -qy --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /etc/ssl/certs && \
-    chmod 755 /mariadb-epglv.sh
+    chmod 755 /usr/local/bin/mariadb-epglv.sh && \
+    ln -s /usr/local/bin/mariadb-epglv.sh /mariadb-epglv.sh
 
 ENV LANG="de_DE.UTF-8" \
     LANGUAGE="de_DE:de" \
     LC_ALL="de_DE.UTF-8" \
     EPGD_RECOMMEND="yes" \
+    MARIADB_CONNECT_TIMEOUT="600" \
+    MARIADB_INNODB_LOCK_WAIT_TIMEOUT="300" \
+    MARIADB_INNODB_ROLLBACK_ON_TIMEOUT="1" \
+    MARIADB_INTERACTIVE_TIMEOUT="86400" \
     MARIADB_LOG_WARNINGS="1" \
     MARIADB_MAX_ALLOWED_PACKET="128M" \
-    MARIADB_WAIT_TIMEOUT="86400" \
-    MARIADB_CONNECT_TIMEOUT="600" \
-    MARIADB_INTERACTIVE_TIMEOUT="86400" \
     MARIADB_NET_READ_TIMEOUT="600" \
     MARIADB_NET_WRITE_TIMEOUT="300" \
-    MARIADB_INNODB_LOCK_WAIT_TIMEOUT="300" \
-    MARIADB_INNODB_ROLLBACK_ON_TIMEOUT="1"
+    MARIADB_TRANSACTION_ISOLATION="READ-COMMITTED" \
+    MARIADB_WAIT_TIMEOUT="86400"
 
 ENTRYPOINT ["/mariadb-epglv.sh"]

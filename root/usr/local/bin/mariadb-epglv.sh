@@ -37,6 +37,7 @@ if [ "$EPGD_RECOMMEND" = "yes" ]; then
 	net_write_timeout=$MARIADB_NET_WRITE_TIMEOUT
 	innodb_lock_wait_timeout=$MARIADB_INNODB_LOCK_WAIT_TIMEOUT
 	innodb_rollback_on_timeout=$MARIADB_INNODB_ROLLBACK_ON_TIMEOUT
+	transaction-isolation=$MARIADB_TRANSACTION_ISOLATION
 	EOF
 else
 	if [ -f "$cnf" ]; then
