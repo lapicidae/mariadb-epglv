@@ -14,7 +14,7 @@ RUN sed -i 'H;1h;$!d;G' /etc/apt/sources.list.d/mariadb.list && \
     dpkg-reconfigure -f noninteractive tzdata &&\
     echo "de_DE.UTF-8 UTF-8" >> /etc/locale.gen; locale-gen && \
     echo "**** install build packages ****" && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -qy
+    DEBIAN_FRONTEND=noninteractive apt-get install -qy \
       build-essential \
       git \
       libmariadb-dev \
