@@ -6,30 +6,44 @@ COPY root/ /
 
 RUN sed -i 'H;1h;$!d;G' /etc/apt/sources.list.d/mariadb.list && \
     sed -i '2s/deb/deb-src/' /etc/apt/sources.list.d/mariadb.list && \
-      \
     apt-get update -qq && \
     apt-get install -qy apt-utils && \
-    #DEBIAN_FRONTEND=noninteractive apt-get upgrade -qy && \
-      \
+    echo "**** timezone and locale ****" && \
     apt-get install -qy locales &&\
     echo "Europe/Berlin" > /etc/timezone &&\
     dpkg-reconfigure -f noninteractive tzdata &&\
     echo "de_DE.UTF-8 UTF-8" >> /etc/locale.gen; locale-gen && \
-      \
-    DEBIAN_FRONTEND=noninteractive apt-get install -qy build-essential git \
-	    libmariadb-dev libmariadbd-dev libmariadb-dev-compat zlib1g-dev libcrypto++-dev libssl-dev && \
-      \
+    echo "**** install build packages ****" && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -qy
+      build-essential \
+      git \
+      libmariadb-dev \
+      libmariadbd-dev \
+      libmariadb-dev-compat \
+      zlib1g-dev \
+      libcrypto++-dev \
+      libssl-dev \
+      python3-dev && \
+    if [ ! -e /usr/bin/python ]; then ln -sf python3 /usr/bin/python ; fi && \
+    if [ ! -e /usr/bin/python-config ]; then ln -sf python3-config /usr/bin/python-config ; fi && \
     cd /tmp && \
     git clone https://projects.vdr-developer.org/git/vdr-epg-daemon.git vdr-epg-daemon && \
     cp -a vdr-epg-daemon/scripts/. /usr/local/bin/ && \
     cd vdr-epg-daemon/epglv && \
-	  make all && \
-	  make install && \
-      \
+      make all && \
+      make install && \
+    echo "**** cleanup ****" && \
     apt-get remove -qy \
-	    apt-utils build-essential git \
-		  libcrypto++-dev libssl-dev zlib1g-dev \
-	    libmariadb-dev libmariadbd-dev libmariadb-dev-compat && \
+      apt-utils \
+      build-essential \
+      git \
+      libcrypto++-dev \
+      libssl-dev \
+      zlib1g-dev \
+      libmariadb-dev \
+      libmariadbd-dev \
+      libmariadb-dev-compat \
+      python3-dev && \
     apt-get purge -qy --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /etc/ssl/certs && \
