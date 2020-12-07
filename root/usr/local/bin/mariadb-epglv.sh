@@ -28,6 +28,7 @@ if [ "$EPGD_RECOMMEND" = "yes" ]; then
 	echo ">>>>>>>>>> pushing epgd recommend settings to $cnf <<<<<<<<<<"
 	cat <<- EOF > $cnf
 	[mysqld]
+	innodb_defragment=$MARIADB_INNODB_DEFRAGMENT
 	connect_timeout=$MARIADB_CONNECT_TIMEOUT
 	innodb_lock_wait_timeout=$MARIADB_INNODB_LOCK_WAIT_TIMEOUT
 	innodb_rollback_on_timeout=$MARIADB_INNODB_ROLLBACK_ON_TIMEOUT
