@@ -28,7 +28,7 @@ RUN sed -i 'H;1h;$!d;G' /etc/apt/sources.list.d/mariadb.list && \
     if [ ! -e /usr/bin/python-config ]; then ln -sf python3-config /usr/bin/python-config ; fi && \
     echo "**** build epglv ****" && \
     cd /tmp && \
-    git clone https://github.com/seahawk1986/vdr-epg-daemon.git vdr-epg-daemon && \
+    git clone https://projects.vdr-developer.org/git/vdr-epg-daemon.git vdr-epg-daemon && \
     cp -a vdr-epg-daemon/scripts/. /usr/local/bin/ && \
     cd vdr-epg-daemon/epglv && \
       make all && \
