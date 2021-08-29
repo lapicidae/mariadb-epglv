@@ -2,6 +2,7 @@ pipeline {
 	environment {
 		registry = "lapicidae/mariadb-epglv"
 		registryCredential = 'dockerhub'
+		registryTag = 'latest'
 		//gitURL = 'https://github.com/lapicidae/mariadb-epglv.git'
 		dockerImage = ''
 	}
@@ -27,7 +28,7 @@ pipeline {
 				echo 'Publishing....'
 				script {
 					docker.withRegistry( '', registryCredential ) {
-						dockerImage.push('test')
+						dockerImage.push(registryTag)
 					}
 				}
 			}
@@ -36,6 +37,7 @@ pipeline {
 			steps{
 				echo 'Cleaning....'
 				sh "docker rmi $registry:$BUILD_NUMBER"
+				sh "docker rmi $registry:$registryTag"
 			}
 		}
 	}
