@@ -2,12 +2,14 @@ node {
 	checkout scm
 	stage('Build') {
 		echo 'Building....'
-		docker.build("mariadb-epglv:${env.BUILD_ID}")
+		def customImage = docker.build("mariadb-epglv:${env.BUILD_ID}")
+		//docker.build("mariadb-epglv:${env.BUILD_ID}")
 	}
-	stage('Test') {
-		echo 'Testing....'
+	stage('Publish') {
+		echo 'Publishing....'
+		customImage.push('latest')
 	}
-	stage('Deploy') {
-		echo 'Deploying....'
+	stage('Clean') {
+		echo 'Cleaning....'
 	}
 }
