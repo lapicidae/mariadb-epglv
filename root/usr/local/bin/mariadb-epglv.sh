@@ -28,8 +28,8 @@ if [ "$EPGD_RECOMMEND" = "yes" ]; then
 	echo ">>>>>>>>>> pushing epgd recommend settings to $cnf <<<<<<<<<<"
 	cat <<- EOF > $cnf
 	[mysqld]
-	innodb_defragment=$MARIADB_INNODB_DEFRAGMENT
 	connect_timeout=$MARIADB_CONNECT_TIMEOUT
+	innodb_defragment=$MARIADB_INNODB_DEFRAGMENT
 	innodb_lock_wait_timeout=$MARIADB_INNODB_LOCK_WAIT_TIMEOUT
 	innodb_rollback_on_timeout=$MARIADB_INNODB_ROLLBACK_ON_TIMEOUT
 	interactive_timeout=$MARIADB_INTERACTIVE_TIMEOUT
@@ -37,6 +37,8 @@ if [ "$EPGD_RECOMMEND" = "yes" ]; then
 	max_allowed_packet=$MARIADB_MAX_ALLOWED_PACKET
 	net_read_timeout=$MARIADB_NET_READ_TIMEOUT
 	net_write_timeout=$MARIADB_NET_WRITE_TIMEOUT
+	table_definition_cache = $MARIADB_TABLE_DEFINITION_CACHE
+	table_open_cache = $MARIADB_TABLE_OPEN_CACHE
 	transaction-isolation=$MARIADB_TRANSACTION_ISOLATION
 	wait_timeout=$MARIADB_WAIT_TIMEOUT
 	EOF
