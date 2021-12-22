@@ -28,6 +28,8 @@ if [ "$EPGD_RECOMMEND" = "yes" ]; then
 	echo ">>>>>>>>>> pushing epgd recommend settings to $cnf <<<<<<<<<<"
 	cat <<- EOF > $cnf
 	[mysqld]
+	performance_schema=ON
+	innodb_stats_on_metadata=0
 	connect_timeout=$MARIADB_CONNECT_TIMEOUT
 	innodb_defragment=$MARIADB_INNODB_DEFRAGMENT
 	innodb_lock_wait_timeout=$MARIADB_INNODB_LOCK_WAIT_TIMEOUT
@@ -42,6 +44,15 @@ if [ "$EPGD_RECOMMEND" = "yes" ]; then
 	transaction-isolation=$MARIADB_TRANSACTION_ISOLATION
 	wait_timeout=$MARIADB_WAIT_TIMEOUT
 	EOF
+
+	if [ -z "$MARIADB_INNODB_BUFFER_POOL_SIZE" ]; then
+		MARIADB_INNODB_BUFFER_POOL_SIZE=$(awk '/^Mem/ {print($2*75/100);}' <(free --bytes))			# 75% of available RAM
+		echo "innodb_buffer_pool_size=$MARIADB_INNODB_BUFFER_POOL_SIZE" >> $cnf
+	fi
+	if [ -z "$MARIADB_INNODB_LOG_FILE_SIZE" ]; then
+		MARIADB_INNODB_LOG_FILE_SIZE=$(awk '{print($1*25/100);}' <(echo $MARIADB_INNODB_BUFFER_POOL_SIZE))	# 25% of buffer pool size
+		echo "innodb_log_file_size=$MARIADB_INNODB_LOG_FILE_SIZE" >> $cnf
+	fi
 else
 	if [ -f "$cnf" ]; then
 		rm -f $cnf
