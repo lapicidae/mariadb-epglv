@@ -46,7 +46,7 @@ if [ "$EPGD_RECOMMEND" = "yes" ]; then
 	EOF
 
 	if [ -z "$MARIADB_INNODB_BUFFER_POOL_SIZE" ]; then
-		MARIADB_INNODB_BUFFER_POOL_SIZE=$(awk '/^Mem/ {print($2*75/100);}' <(free --bytes))			# 75% of available RAM
+		MARIADB_INNODB_BUFFER_POOL_SIZE=$(awk '/^Mem/ {print($2*35/100);}' <(free --bytes))			# 35% of available RAM
 		echo "innodb_buffer_pool_size=$MARIADB_INNODB_BUFFER_POOL_SIZE" >> $cnf
 	fi
 	if [ -z "$MARIADB_INNODB_LOG_FILE_SIZE" ]; then
