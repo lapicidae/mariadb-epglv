@@ -14,7 +14,6 @@ RUN sed -i 'H;1h;$!d;G' /etc/apt/sources.list.d/mariadb.list && \
       git \
       libcrypto++-dev \
       libmariadb-dev \
-      libmariadb-dev-compat \
       libmariadbd-dev \
       libssl-dev \
       python3-dev \
@@ -36,7 +35,6 @@ RUN sed -i 'H;1h;$!d;G' /etc/apt/sources.list.d/mariadb.list && \
       git \
       libcrypto++-dev \
       libmariadb-dev \
-      libmariadb-dev-compat \
       libmariadbd-dev \
       libssl-dev \
       python3-dev \
