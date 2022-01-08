@@ -36,7 +36,7 @@ epglv_net_read_timeout=${RCMD_NET_READ_TIMEOUT:-"600"}
 epglv_net_write_timeout=${RCMD_NET_WRITE_TIMEOUT:-"300"}
 epglv_table_definition_cache=${RCMD_TABLE_DEFINITION_CACHE:-"1200"}
 epglv_table_open_cache=${RCMD_TABLE_OPEN_CACHE:-"1200"}
-epglv_tx_isolation=${RCMD_TX_ISOLATION:-"READ-COMMITTED"}
+epglv_transaction_isolation=${RCMD_TRANSACTION_ISOLATION:-"READ-COMMITTED"}
 epglv_wait_timeout=${RCMD_WAIT_TIMEOUT:-"86400"}
 
 
@@ -55,7 +55,7 @@ if [ "$EPGD_RECOMMEND" != "false" ]; then
 	net_write_timeout=$epglv_net_write_timeout
 	table_definition_cache = $epglv_table_definition_cache
 	table_open_cache = $epglv_table_open_cache
-	tx_isolation=$epglv_tx_isolation
+	transaction-isolation=$epglv_transaction_isolation
 	wait_timeout=$epglv_wait_timeout
 	EOF
 
