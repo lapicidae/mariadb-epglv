@@ -22,8 +22,9 @@ RUN apt-get update -qq && \
       zlib1g-dev && \
     if [ ! -e /usr/bin/python ]; then ln -sf $(which python3) /usr/bin/python ; fi && \
     echo "**** init locales ****" && \
-    update-locale LANG="$LANG" LC_MESSAGES=POSIX && \
-    locale-gen "$LANG" && \
+    localedef -i $(echo "$LANG" | cut -d "." -f 1) -c -f $(echo "$LANG" | cut -d "." -f 2) -A /usr/share/locale/locale.alias $LANG && \
+    locale-gen $LANG && \
+    update-locale LANG="$LANG" LANGUAGE="$(echo "$LANG" | cut -d "." -f 1):$(echo "$LANG" | cut -d "_" -f 1)" && \
     echo "**** build epglv ****" && \
     cd /tmp && \
     git clone https://projects.vdr-developer.org/git/vdr-epg-daemon.git vdr-epg-daemon && \
