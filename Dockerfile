@@ -15,9 +15,13 @@ RUN apt-get update -qq && \
       libmariadb-dev \
       libmariadbd-dev \
       libssl-dev \
+      locales \
       python3-dev \
       zlib1g-dev && \
     if [ ! -e /usr/bin/python ]; then ln -sf $(which python3) /usr/bin/python ; fi && \
+    echo "**** init locales ****" && \
+    update-locale LANG=en_US.UTF-8 LC_MESSAGES=POSIX && \
+    locale-gen en_US.UTF-8 && \
     echo "**** build epglv ****" && \
     cd /tmp && \
     git clone https://projects.vdr-developer.org/git/vdr-epg-daemon.git vdr-epg-daemon && \
