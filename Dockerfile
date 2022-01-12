@@ -40,7 +40,11 @@ RUN apt-get update -qq && \
       git \
       '*-dev' && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    rm -rf \
+      /var/lib/apt/lists/* \
+      /tmp/* \
+      /var/tmp/* && \
+    if [ -L /usr/bin/python ]; then unlink /usr/bin/python ; fi && \
     chmod 755 /usr/local/bin/mariadb-epglv.sh && \
     ln -s /usr/local/bin/mariadb-epglv.sh /mariadb-epglv.sh
 
