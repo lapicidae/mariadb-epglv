@@ -27,12 +27,14 @@ RUN apt-get update -qq && \
     make all && \
     make install && \
     echo "**** cleanup ****" && \
+    apt-mark hold locales && \
     apt-get purge --auto-remove -qy \
       apt-utils \
       build-essential \
       git \
       '*-dev' && \
     apt-get clean && \
+    apt-mark unhold locales && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     chmod 755 /usr/local/bin/mariadb-epglv.sh && \
     ln -s /usr/local/bin/mariadb-epglv.sh /mariadb-epglv.sh
