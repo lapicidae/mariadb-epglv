@@ -27,8 +27,8 @@ User gid:    $(id -g mysql)
 if [ ! -z "$LANG" ];then
 	readarray -t LOCALE < <(locale -a)
 	if [[ ! "${LOCALE[*]}" =~ "${LANG:0:6}" ]]; then	# use only first 6 letters of $LANG
-		update-locale LANG="$LANG" LANGUAGE="$(echo "$LANG" | cut -d "." -f 1):$(echo "$LANG" | cut -d "_" -f 1)"
 		locale-gen en_US.UTF-8 "$LANG"
+		update-locale LANG="$LANG" LANGUAGE="$(echo "$LANG" | cut -d "." -f 1):$(echo "$LANG" | cut -d "_" -f 1)"
 	fi
 fi
 
