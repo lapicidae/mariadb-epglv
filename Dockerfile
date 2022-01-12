@@ -4,6 +4,8 @@ WORKDIR /tmp
 
 COPY root/ /
 
+ENV LANG="en_US.UTF-8"
+
 ARG DEBIAN_FRONTEND="noninteractive"
 
 RUN apt-get update -qq && \
@@ -20,8 +22,8 @@ RUN apt-get update -qq && \
       zlib1g-dev && \
     if [ ! -e /usr/bin/python ]; then ln -sf $(which python3) /usr/bin/python ; fi && \
     echo "**** init locales ****" && \
-    update-locale LANG=en_US.UTF-8 LC_MESSAGES=POSIX && \
-    locale-gen en_US.UTF-8 && \
+    update-locale LANG="$LANG" LC_MESSAGES=POSIX && \
+    locale-gen "$LANG" && \
     echo "**** build epglv ****" && \
     cd /tmp && \
     git clone https://projects.vdr-developer.org/git/vdr-epg-daemon.git vdr-epg-daemon && \
