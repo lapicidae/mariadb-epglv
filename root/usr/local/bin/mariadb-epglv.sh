@@ -37,6 +37,7 @@ cnf="/etc/mysql/mariadb.conf.d/epglv.cnf"
 
 ## defaults
 epglv_innodb_defragment=${RCMD_INNODB_DEFRAGMENT:-"1"}
+epglv_table_definition_cache=${RCMD_TABLE_DEFINITION_CACHE:-"500"}
 
 
 ## write config file
@@ -46,6 +47,7 @@ if [ "$EPGD_RECOMMEND" != "false" ]; then
 	cat <<- EOF > $cnf
 	[mariadb]
 	innodb_defragment=$epglv_innodb_defragment
+	table_definition_cache=$epglv_table_definition_cache
 	EOF
 
 	if [ -z "$RCMD_INNODB_BUFFER_POOL_SIZE" ]; then
