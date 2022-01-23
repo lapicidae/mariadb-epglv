@@ -16,7 +16,7 @@ Slightly modified [MariaDB (latest)](https://hub.docker.com/_/mariadb?tab=tags) 
 * regular and timely application updates
 * integrated [epglv](https://projects.vdr-developer.org/git/vdr-epg-daemon.git/tree/epglv)
 * recommended settings (deactivatable)
-* creates [epgd database](https://projects.vdr-developer.org/git/vdr-epg-daemon.git/tree/README#n115) automatically on first run
+* creates [epgd database](root/docker-entrypoint-initdb.d/mysql-first-time.sql) automatically on first run
 
 ### *Note*
 The image is automatically rebuilt when any of the following sources receive an update:
