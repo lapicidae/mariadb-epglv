@@ -58,11 +58,21 @@ pipeline {
 				}
 			}
 		}
+		stage('Version') {
+			steps{
+				echo 'Read Version from image....'
+				script {
+					VERSION = sh "docker run --rm --entrypoint '' $registry:$BUILD_NUMBER cat /etc/lsb-release | grep -i codename | cut -d = -f 2"
+				}
+				echo "Image Version: $VERSION"
+			}
+		}
 		stage('Publish') {
 			steps{
 				echo 'Publishing....'
 				script {
 					docker.withRegistry( '', registryCredential ) {
+						dockerImage.push("${VERSION}")
 						dockerImage.push(registryTag)
 					}
 				}
