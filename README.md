@@ -8,7 +8,7 @@ Slightly modified [MariaDB (latest)](https://hub.docker.com/_/mariadb?tab=tags) 
 [![GitHub Stars](https://img.shields.io/github/stars/lapicidae/mariadb-epglv.svg?color=3c0e7b&labelColor=555555&logoColor=ffffff&style=for-the-badge&logo=github)](https://github.com/lapicidae/mariadb-epglv)
 [![Docker Pulls](https://img.shields.io/docker/pulls/lapicidae/mariadb-epglv.svg?color=3c0e7b&labelColor=555555&logoColor=ffffff&style=for-the-badge&label=pulls&logo=docker)](https://hub.docker.com/r/lapicidae/mariadb-epglv)
 [![Docker Stars](https://img.shields.io/docker/stars/lapicidae/mariadb-epglv.svg?color=3c0e7b&labelColor=555555&logoColor=ffffff&style=for-the-badge&label=stars&logo=docker)](https://hub.docker.com/r/lapicidae/mariadb-epglv)
-[![Build & Push](https://github.com/lapicidae/mariadb-epglv/actions/workflows/docker.yml/badge.svg)](https://github.com/lapicidae/mariadb-epglv/actions/workflows/docker.yml)
+[![GitHub Checks](https://img.shields.io/github/checks-status/lapicidae/mariadb-epglv/master?label=build%20check&labelColor=555555&logoColor=ffffff&style=for-the-badge&logo=jenkins)](https://github.com/lapicidae/mariadb-epglv/commits)
 
 
 ## Features
