@@ -37,6 +37,7 @@ cnf="/etc/mysql/mariadb.conf.d/epglv.cnf"
 
 ## defaults
 epglv_innodb_defragment=${RCMD_INNODB_DEFRAGMENT:-"1"}
+epglv_innodb_lock_wait_timeout=${RCMD_INNODB_LOCK_WAIT_TIMEOUT:-"300"}
 epglv_table_definition_cache=${RCMD_TABLE_DEFINITION_CACHE:-"500"}
 
 
@@ -47,6 +48,7 @@ if [ "$EPGD_RECOMMEND" != "false" ]; then
 	cat <<- EOF > $cnf
 	[mariadb]
 	innodb_defragment=$epglv_innodb_defragment
+	innodb_lock_wait_timeout=$epglv_innodb_lock_wait_timeout
 	table_definition_cache=$epglv_table_definition_cache
 	EOF
 
@@ -64,4 +66,5 @@ fi
 
 
 ## run default entrypoint
-exec /usr/local/bin/docker-entrypoint.sh "$@"
+echo "Start MariaDB..."
+exec /usr/local/bin/docker-entrypoint.sh mariadbd "$@"
