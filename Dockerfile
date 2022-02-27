@@ -48,4 +48,4 @@ RUN apt-get update -qq && \
     chmod 755 /usr/local/bin/mariadb-epglv.sh && \
     ln -s /usr/local/bin/mariadb-epglv.sh /mariadb-epglv.sh
 
-ENTRYPOINT ["/mariadb-epglv.sh"]
+ENTRYPOINT ["/mariadb-epglv.sh", "mariadbd"]

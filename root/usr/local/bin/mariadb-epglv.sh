@@ -67,4 +67,4 @@ fi
 
 ## run default entrypoint
 echo "Start MariaDB..."
-exec /usr/local/bin/docker-entrypoint.sh mariadbd "$@"
+exec /usr/local/bin/docker-entrypoint.sh "$@"
