@@ -39,6 +39,7 @@ EPGlv specific variables.
 | Parameter | Function |
 | :----: | --- |
 | `-e LANG=en_US.UTF-8` | Default locale; see [list](https://sourceware.org/git/?p=glibc.git;a=blob_plain;f=localedata/SUPPORTED;hb=HEAD) (epglv seems to require initialized locales) |
+| `-e TZ=Europe/London` | Optional - Specify timezone |
 | `-e EPGD_RECOMMEND=false` | Optional - Disable recommended settings |
 
 
