@@ -1,4 +1,5 @@
-FROM mariadb:latest
+ARG VERSION_TAG=latest
+FROM mariadb:${VERSION_TAG}
 
 WORKDIR /tmp
 
