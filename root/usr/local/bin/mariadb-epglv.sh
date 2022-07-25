@@ -38,6 +38,7 @@ cnf="/etc/mysql/mariadb.conf.d/epglv.cnf"
 ## defaults
 epglv_innodb_defragment=${RCMD_INNODB_DEFRAGMENT:-"1"}
 epglv_innodb_lock_wait_timeout=${RCMD_INNODB_LOCK_WAIT_TIMEOUT:-"300"}
+epglv_innodb_use_native_aio=${RCMD_INNODB_USE_NATIVE_AIO:-"0"}
 epglv_table_definition_cache=${RCMD_TABLE_DEFINITION_CACHE:-"500"}
 
 
@@ -49,6 +50,7 @@ if [ "$EPGD_RECOMMEND" != "false" ]; then
 	[mariadb]
 	innodb_defragment=$epglv_innodb_defragment
 	innodb_lock_wait_timeout=$epglv_innodb_lock_wait_timeout
+	innodb_use_native_aio=$epglv_innodb_use_native_aio
 	table_definition_cache=$epglv_table_definition_cache
 	EOF
 
