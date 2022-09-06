@@ -39,6 +39,7 @@ cnf="/etc/mysql/mariadb.conf.d/epglv.cnf"
 epglv_innodb_defragment=${RCMD_INNODB_DEFRAGMENT:-"1"}
 epglv_innodb_lock_wait_timeout=${RCMD_INNODB_LOCK_WAIT_TIMEOUT:-"300"}
 epglv_innodb_use_native_aio=${RCMD_INNODB_USE_NATIVE_AIO:-"0"}
+epglv_innodb_rollback_on_timeout=${RCMD_INNODB_ROLLBACK_ON_TIMEOUT:-"1"}
 epglv_table_definition_cache=${RCMD_TABLE_DEFINITION_CACHE:-"500"}
 
 
@@ -50,12 +51,13 @@ if [ "$EPGD_RECOMMEND" != "false" ]; then
 	[mariadb]
 	innodb_defragment=$epglv_innodb_defragment
 	innodb_lock_wait_timeout=$epglv_innodb_lock_wait_timeout
+	innodb_rollback_on_timeout=$epglv_innodb_rollback_on_timeout
 	innodb_use_native_aio=$epglv_innodb_use_native_aio
 	table_definition_cache=$epglv_table_definition_cache
 	EOF
 
 	if [ -z "$RCMD_INNODB_BUFFER_POOL_SIZE" ]; then
-		epglv_innodb_buffer_pool_size=$(awk '/^Mem/ {print($2*30/100);}' <(free --bytes))		# 30% of available RAM
+		epglv_innodb_buffer_pool_size=$(awk '/^Mem/ {print int($2*30/100);}' <(free --bytes))		# 30% of available RAM
 		if [[ "$epglv_innodb_buffer_pool_size" =~ ^[0-9]+$ ]] && [ "$epglv_innodb_buffer_pool_size" -gt "134217728" ]; then	# if var is an integer and greater than the default value
 			echo "innodb_buffer_pool_size=$epglv_innodb_buffer_pool_size" >> $cnf
 		fi
