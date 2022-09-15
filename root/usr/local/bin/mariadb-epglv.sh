@@ -40,7 +40,7 @@ epglv_innodb_defragment=${RCMD_INNODB_DEFRAGMENT:-"1"}
 epglv_innodb_lock_wait_timeout=${RCMD_INNODB_LOCK_WAIT_TIMEOUT:-"300"}
 epglv_innodb_use_native_aio=${RCMD_INNODB_USE_NATIVE_AIO:-"0"}
 epglv_innodb_rollback_on_timeout=${RCMD_INNODB_ROLLBACK_ON_TIMEOUT:-"1"}
-epglv_table_definition_cache=${RCMD_TABLE_DEFINITION_CACHE:-"500"}
+epglv_table_definition_cache=${RCMD_TABLE_DEFINITION_CACHE:-"856"}
 
 
 ## write config file
