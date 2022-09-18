@@ -39,8 +39,8 @@ RUN apt-get update -qq && \
     apt-get purge --auto-remove -qy \
       apt-utils \
       build-essential \
-      git \
-      '*-dev' && \
+      git && \
+    dpkg -l | grep "\-dev" | sed 's/ \+ /|/g' | cut -d '|' -f 2 | xargs -I '{}' apt-get purge --auto-remove -qy '{}' && \
     apt-get clean && \
     rm -rf \
       /var/lib/apt/lists/* \
