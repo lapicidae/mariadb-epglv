@@ -24,11 +24,10 @@ RUN apt-get update -qq && \
     if [ ! -e /usr/bin/python ]; then ln -sf $(which python3) /usr/bin/python ; fi && \
     echo "**** init locales ****" && \
     localedef -i $(echo "$LANG" | cut -d "." -f 1) -c -f $(echo "$LANG" | cut -d "." -f 2) -A /usr/share/locale/locale.alias $LANG && \
-    locale-gen $LANG && \
+    locale-gen de_DE.UTF-8 $LANG && \
     update-locale LANG="$LANG" LANGUAGE="$(echo "$LANG" | cut -d "." -f 1):$(echo "$LANG" | cut -d "_" -f 1)" && \
     echo "**** build epglv ****" && \
     cd /tmp && \
-    #git clone https://projects.vdr-developer.org/git/vdr-epg-daemon.git vdr-epg-daemon && \
     git clone https://github.com/vdr-projects/vdr-epg-daemon.git vdr-epg-daemon && \
     cp -a vdr-epg-daemon/scripts/. /usr/local/bin/ && \
     cd vdr-epg-daemon/epglv && \
