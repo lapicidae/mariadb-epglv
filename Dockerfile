@@ -39,7 +39,7 @@ RUN apt-get update -qq && \
       apt-utils \
       build-essential \
       git && \
-    dpkg -l | grep "\-dev" | sed 's/ \+ /|/g' | cut -d '|' -f 2 | xargs apt-get purge --auto-remove -qy && \
+    dpkg -l | grep "\-dev" | sed 's/ \+ /|/g' | cut -d '|' -f 2 | cut -d ':' -f 1 | xargs apt-get purge --auto-remove -qy && \
     apt-get clean && \
     rm -rf \
       /var/lib/apt/lists/* \
