@@ -53,6 +53,7 @@ Can only be used if `EPGD_RECOMMEND=false` has not been set.
 | `RCMD_INNODB_ROLLBACK_ON_TIMEOUT` | 1 | [MariaDB Knowledge Base](https://mariadb.com/kb/en/innodb-system-variables/#innodb_rollback_on_timeout) |
 | `RCMD_INNODB_USE_NATIVE_AIO` | 0 | [MariaDB Knowledge Base](https://mariadb.com/kb/en/innodb-system-variables/#innodb_use_native_aio) |
 | `RCMD_TABLE_DEFINITION_CACHE` | 856 | [MariaDB Knowledge Base](https://mariadb.com/kb/en/server-system-variables/#table_definition_cache) |
+| `RCMD_TRANSACTION_ISOLATION` | READ-COMMITTED | [MariaDB Knowledge Base](https://mariadb.com/kb/en/server-system-variables/#tx_isolation) |
 
 #### Maintenance mode (**CAUTION!** Use only if you know what you are doing):
 

@@ -37,6 +37,7 @@ epglv_innodb_lock_wait_timeout=${RCMD_INNODB_LOCK_WAIT_TIMEOUT:-"300"}
 epglv_innodb_rollback_on_timeout=${RCMD_INNODB_ROLLBACK_ON_TIMEOUT:-"1"}
 epglv_innodb_use_native_aio=${RCMD_INNODB_USE_NATIVE_AIO:-"0"}
 epglv_table_definition_cache=${RCMD_TABLE_DEFINITION_CACHE:-"856"}
+epglv_transaction_isolation=${RCMD_TRANSACTION_ISOLATION:-"READ-COMMITTED"}
 
 if [ "$EPGD_RECOMMEND" != "false" ]; then
 	echo "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄⚟ Recommend Settings ⚞┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄"
@@ -45,6 +46,7 @@ if [ "$EPGD_RECOMMEND" != "false" ]; then
 	printf "%-30s%s\n" "innodb_rollback_on_timeout:" "$epglv_innodb_rollback_on_timeout"
 	printf "%-30s%s\n" "innodb_use_native_aio:" "$epglv_innodb_use_native_aio"
 	printf "%-30s%s\n" "table_definition_cache:" "$epglv_table_definition_cache"
+	printf "%-30s%s\n" "transaction_isolation:" "$epglv_transaction_isolation"
 
 	# write config file
 	cat <<- EOF > $cnf
@@ -55,6 +57,7 @@ if [ "$EPGD_RECOMMEND" != "false" ]; then
 	innodb_rollback_on_timeout=$epglv_innodb_rollback_on_timeout
 	innodb_use_native_aio=$epglv_innodb_use_native_aio
 	table_definition_cache=$epglv_table_definition_cache
+	transaction_isolation=$epglv_transaction_isolation
 	EOF
 
 	if [ -z "$RCMD_INNODB_BUFFER_POOL_SIZE" ]; then
