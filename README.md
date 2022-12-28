@@ -5,16 +5,16 @@ Slightly modified [MariaDB (latest)](https://hub.docker.com/_/mariadb?tab=tags) 
 
 # [lapicidae/mariadb-epglv](https://github.com/lapicidae/mariadb-epglv)
 
-[![GitHub Stars](https://img.shields.io/github/stars/lapicidae/mariadb-epglv.svg?color=3c0e7b&labelColor=555555&logoColor=ffffff&style=for-the-badge&logo=github)](https://github.com/lapicidae/mariadb-epglv)
-[![Docker Pulls](https://img.shields.io/docker/pulls/lapicidae/mariadb-epglv.svg?color=3c0e7b&labelColor=555555&logoColor=ffffff&style=for-the-badge&label=pulls&logo=docker)](https://hub.docker.com/r/lapicidae/mariadb-epglv)
-[![Docker Stars](https://img.shields.io/docker/stars/lapicidae/mariadb-epglv.svg?color=3c0e7b&labelColor=555555&logoColor=ffffff&style=for-the-badge&label=stars&logo=docker)](https://hub.docker.com/r/lapicidae/mariadb-epglv)
-[![Build & Push](https://img.shields.io/github/workflow/status/lapicidae/mariadb-epglv/Docker%20Build%20&%20Push?label=Build%20%26%20Push&labelColor=555555&logoColor=ffffff&style=for-the-badge&logo=github)](https://github.com/lapicidae/mariadb-epglv/actions/workflows/docker.yml)
+[![GitHub Repo stars](https://img.shields.io/github/stars/lapicidae/mariadb-epglv?color=3c0e7b&logo=github&logoColor=fff&style=for-the-badge)](https://github.com/lapicidae/mariadb-epglv)
+[![Docker Pulls](https://img.shields.io/docker/pulls/lapicidae/mariadb-epglv?color=3c0e7b&label=pulls&logo=docker&logoColor=fff&style=for-the-badge)](https://hub.docker.com/r/lapicidae/mariadb-epglv)
+[![Docker Stars](https://img.shields.io/docker/stars/lapicidae/mariadb-epglv?color=3c0e7b&label=stars&logo=docker&logoColor=fff&style=for-the-badge)](https://hub.docker.com/r/lapicidae/mariadb-epglv)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/lapicidae/mariadb-epglv/docker.yml?logo=github&logoColor=ffffff&style=for-the-badge)](https://github.com/lapicidae/mariadb-epglv/actions/workflows/docker.yml)
 
 
 ## Features
 
 * regular and timely application updates
-* integrated [epglv](https://github.com/vdr-projects/vdr-epg-daemon/tree/master/epglv)
+* integrated [epglv](https://github.com/horchi/vdr-epg-daemon/tree/master/epglv)
 * recommended settings (deactivatable)
 * creates [epgd database](root/docker-entrypoint-initdb.d/mysql-first-time.sql) automatically on first run
 
@@ -22,7 +22,7 @@ Slightly modified [MariaDB (latest)](https://hub.docker.com/_/mariadb?tab=tags) 
 The image is automatically rebuilt when any of the following sources receive an update:
 
 * [MariaDB](https://hub.docker.com/_/mariadb?tab=tags) Official Docker Image - latest
-* [vdr-epg-daemon](https://github.com/vdr-projects/vdr-epg-daemon) GitHub repository
+* [vdr-epg-daemon](https://github.com/horchi/vdr-epg-daemon) GitHub repository
 
 
 ## Getting Started
@@ -43,7 +43,7 @@ The image is automatically rebuilt when any of the following sources receive an 
 | `-e EPGD_RECOMMEND=false` | Optional - Disable recommended settings |
 
 #### Fine-tuning the recommended settings:
-Can only be used if `EPGD_RECOMMEND=false` has not been set.
+Can only be used if `EPGD_RECOMMEND=false` has **not** been set.
 
 | Parameter | Default / Recommended Value | Function |
 |-----|-----|-----|
@@ -64,5 +64,5 @@ Can only be used if `EPGD_RECOMMEND=false` has not been set.
 
 ## Thanks
 
-* **[VDR EPG Daemon Team](https://github.com/vdr-projects/vdr-epg-daemon)**
+* **[VDR EPG Daemon Team](https://github.com/horchi/vdr-epg-daemon)**
 * **[MariaDB](https://mariadb.com/)**

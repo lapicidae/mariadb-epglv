@@ -28,7 +28,7 @@ RUN apt-get update -qq && \
     update-locale LANG="$LANG" LANGUAGE="$(echo "$LANG" | cut -d "." -f 1):$(echo "$LANG" | cut -d "_" -f 1)" && \
     echo "**** build epglv ****" && \
     cd /tmp && \
-    git clone https://github.com/vdr-projects/vdr-epg-daemon.git vdr-epg-daemon && \
+    git clone https://github.com/horchi/vdr-epg-daemon.git vdr-epg-daemon && \
     cp -a vdr-epg-daemon/scripts/. /usr/local/bin/ && \
     cd vdr-epg-daemon/epglv && \
     sed -i "s/^MYSQL_PLGDIR :=.*/MYSQL_PLGDIR := \/usr\/lib\/mysql\/plugin/g" Makefile && \
