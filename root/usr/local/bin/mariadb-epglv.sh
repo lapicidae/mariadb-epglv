@@ -11,7 +11,7 @@ echo '
 ║                   )__)  )___/( (_-. )(__\  /                   ║
 ║                  (____)(__)   \___/(____)\/                    ║
 ║                                                                ║
-║         https://github.com/vdr-projects/vdr-epg-daemon         ║
+║            https://github.com/horchi/vdr-epg-daemon            ║
 ╚════════════════════════════════════════════════════════════════╝
 '
 
