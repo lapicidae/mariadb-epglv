@@ -7,7 +7,8 @@ COPY root/ /
 
 ENV LANG="en_US.UTF-8"
 
-ARG DEBIAN_FRONTEND="noninteractive"
+ARG EPGD_DEV="false" \
+    DEBIAN_FRONTEND="noninteractive"
 
 RUN apt-get update -qq && \
     echo "**** install build packages ****" && \
@@ -28,12 +29,16 @@ RUN apt-get update -qq && \
     update-locale LANG="$LANG" LANGUAGE="$(echo "$LANG" | cut -d "." -f 1):$(echo "$LANG" | cut -d "_" -f 1)" && \
     echo "**** build epglv ****" && \
     cd /tmp && \
-    git clone https://github.com/horchi/vdr-epg-daemon.git vdr-epg-daemon && \
-    cp -a vdr-epg-daemon/scripts/. /usr/local/bin/ && \
+    epgdREPO='https://github.com/horchi/vdr-epg-daemon.git' && \
+    [ "$EPGD_DEV" = 'true' ] && \
+    git clone "$epgdREPO" vdr-epg-daemon || \
+    git -c advice.detachedHead=false clone "$epgdREPO" --single-branch --branch $(git ls-remote --tags --sort=-version:refname --refs "$epgdREPO" | head -n 1 | cut -d/ -f3) vdr-epg-daemon && \
     cd vdr-epg-daemon/epglv && \
     sed -i "s/^MYSQL_PLGDIR :=.*/MYSQL_PLGDIR := \/usr\/lib\/mysql\/plugin/g" Makefile && \
     make all && \
     make install && \
+    echo "**** epgd scripts ****" && \
+    cp -a /tmp/vdr-epg-daemon/scripts/. /usr/local/bin/ && \
     echo "**** cleanup ****" && \
     apt-get purge --auto-remove -qy \
       apt-utils \
