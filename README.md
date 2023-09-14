@@ -48,7 +48,6 @@ Can only be used if `EPGD_RECOMMEND=false` has **not** been set.
 | Parameter | Default / Recommended Value | Function |
 |-----|-----|-----|
 | `RCMD_INNODB_BUFFER_POOL_SIZE` | Calculated automatically (30% of available RAM) | [MariaDB Knowledge Base](https://mariadb.com/kb/en/innodb-system-variables/#innodb_buffer_pool_size)
-| `RCMD_INNODB_DEFRAGMENT` | 1 | [MariaDB Knowledge Base](https://mariadb.com/kb/en/innodb-system-variables/#innodb_defragment) |
 | `RCMD_INNODB_LOCK_WAIT_TIMEOUT` | 300 | [MariaDB Knowledge Base](https://mariadb.com/kb/en/innodb-system-variables/#innodb_lock_wait_timeout) |
 | `RCMD_INNODB_ROLLBACK_ON_TIMEOUT` | 1 | [MariaDB Knowledge Base](https://mariadb.com/kb/en/innodb-system-variables/#innodb_rollback_on_timeout) |
 | `RCMD_INNODB_USE_NATIVE_AIO` | 0 | [MariaDB Knowledge Base](https://mariadb.com/kb/en/innodb-system-variables/#innodb_use_native_aio) |

@@ -32,7 +32,6 @@ fi
 cnf="/etc/mysql/mariadb.conf.d/epglv.cnf"
 
 # defaults
-epglv_innodb_defragment=${RCMD_INNODB_DEFRAGMENT:-"1"}
 epglv_innodb_lock_wait_timeout=${RCMD_INNODB_LOCK_WAIT_TIMEOUT:-"300"}
 epglv_innodb_rollback_on_timeout=${RCMD_INNODB_ROLLBACK_ON_TIMEOUT:-"1"}
 epglv_innodb_use_native_aio=${RCMD_INNODB_USE_NATIVE_AIO:-"0"}
@@ -41,7 +40,6 @@ epglv_transaction_isolation=${RCMD_TRANSACTION_ISOLATION:-"READ-COMMITTED"}
 
 if [ "$EPGD_RECOMMEND" != "false" ]; then
 	echo "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄⚟ Recommend Settings ⚞┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄"
-	printf "%-30s%s\n" "innodb_defragment:" "$epglv_innodb_defragment"
 	printf "%-30s%s\n" "innodb_lock_wait_timeout:" "$epglv_innodb_lock_wait_timeout"
 	printf "%-30s%s\n" "innodb_rollback_on_timeout:" "$epglv_innodb_rollback_on_timeout"
 	printf "%-30s%s\n" "innodb_use_native_aio:" "$epglv_innodb_use_native_aio"
@@ -52,7 +50,6 @@ if [ "$EPGD_RECOMMEND" != "false" ]; then
 	cat <<- EOF > $cnf
 	# ATTENTION: Changes in this file will be overwritten on restart
 	[mariadb]
-	innodb_defragment=$epglv_innodb_defragment
 	innodb_lock_wait_timeout=$epglv_innodb_lock_wait_timeout
 	innodb_rollback_on_timeout=$epglv_innodb_rollback_on_timeout
 	innodb_use_native_aio=$epglv_innodb_use_native_aio
