@@ -38,6 +38,9 @@ $RECYCLE.BIN/
 # Kate Swap File
 *.kate-swp
 
+# Ghostwriter settings
+widgets.qss
+
 # OSX
 # =========================
 
