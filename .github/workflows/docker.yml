@@ -4,6 +4,7 @@ on:
     branches:
       - master
     paths-ignore:
+      - .gitignore
       - docker-compose.yml
       - epglv-logo.svg
       - Jenkinsfile
