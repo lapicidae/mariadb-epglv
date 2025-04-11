@@ -7,7 +7,7 @@ COPY root/ /
 
 ENV LANG="en_US.UTF-8"
 
-ARG EPGD_DEV="false" \
+ARG EPGD_DEV="true" \
     DEBIAN_FRONTEND="noninteractive"
 
 RUN apt-get update -qq && \
