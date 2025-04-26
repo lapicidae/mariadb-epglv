@@ -29,11 +29,14 @@ jobs:
     permissions:
       packages: write
     steps:
+      - name: Commit Hash
+        id: c_hash
+        uses: prompt/actions-commit-hash@v3
       - name: Build Arguments
         id: get_arg
         run: |
           printf 'dateTime=%(%Y-%m-%dT%H:%M:%S%z)T\n' >> $GITHUB_OUTPUT
-          printf 'imageRevision=%s\n' "$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_OUTPUT
+          printf 'imageRevision=%s\n' "${{ steps.c_hash.outputs.short }}" >> $GITHUB_OUTPUT
           printf 'ALPINEbaseDIGEST=%s\n' "$(docker image pull ${{ env.ALPINEbaseIMAGE }}:${{ env.ALPINEbaseTAG }} | grep -i digest | cut -d ' ' -f 2)" >> $GITHUB_OUTPUT
           printf 'OFFICIALbaseDIGEST=%s\n' "$(docker image pull ${{ env.OFFICIALbaseIMAGE }}:${{ env.OFFICIALbaseTAG }} | grep -i digest | cut -d ' ' -f 2)" >> $GITHUB_OUTPUT
           printf 'ALPINEmariadbVersion=%s\n' "$(docker run --rm ${{ env.ALPINEbaseIMAGE }}:${{ env.ALPINEbaseTAG }} sh -c "apk update --quiet && apk info mariadb | head -n 1 | cut -d '-' -f 2 | tr -d '\n'")" >> $GITHUB_OUTPUT
