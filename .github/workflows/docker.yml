@@ -16,17 +16,36 @@ on:
         type: choice
         options:
           - test
-          - build
+          - bld_all
+          - bld_alpine
+          - bld_official
         required: true
       trigger:
         type: string
 jobs:
   docker:
-    if: github.event.inputs.tags != 'test'
+    if: ${{ github.event.inputs.tags != 'test' }}
     runs-on: ubuntu-latest
     permissions:
       packages: write
     steps:
+      - name: Build Arguments
+        id: get_arg
+        run: |
+          printf 'dateTime=%(%Y-%m-%dT%H:%M:%S%z)T\n' >> $GITHUB_OUTPUT
+          printf 'imageRevision=%s\n' "$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_OUTPUT
+          printf 'ALPINEbaseDIGEST=%s\n' "$(docker image pull ${{ env.ALPINEbaseIMAGE }}:${{ env.ALPINEbaseTAG }} | grep -i digest | cut -d ' ' -f 2)" >> $GITHUB_OUTPUT
+          printf 'OFFICIALbaseDIGEST=%s\n' "$(docker image pull ${{ env.OFFICIALbaseIMAGE }}:${{ env.OFFICIALbaseTAG }} | grep -i digest | cut -d ' ' -f 2)" >> $GITHUB_OUTPUT
+          printf 'ALPINEmariadbVersion=%s\n' "$(docker run --rm ${{ env.ALPINEbaseIMAGE }}:${{ env.ALPINEbaseTAG }} sh -c "apk update --quiet && apk info mariadb | head -n 1 | cut -d '-' -f 2 | tr -d '\n'")" >> $GITHUB_OUTPUT
+          printf 'OFFICIALmariadbVersion=%s\n' "$(docker run --rm ${{ env.OFFICIALbaseIMAGE }}:${{ env.OFFICIALbaseTAG }} sh -c "mariadbd --version | cut -d ' ' -f4 | cut -d '-' -f 1")" >> $GITHUB_OUTPUT
+      - name: Info
+        run: |
+          printf '<<<<<<<<< BUILD ARGUMENTS >>>>>>>>>\n'
+          printf 'Build Timestamp:\t%s\n' "${{ steps.get_arg.outputs.dateTime }}"
+          printf 'MariaDB Version:\tAlpine image (%s) / MariaDB image (%s)\n' "${{ steps.get_arg.outputs.ALPINEmariadbVersion }}" "${{ steps.get_arg.outputs.OFFICIALmariadbVersion }}"
+          printf 'Image Revision:\t\t%s\n' "${{ steps.get_arg.outputs.imageRevision }}"
+          printf 'Alpine Base Digest:\t%s\n' "${{ steps.get_arg.outputs.ALPINEbaseDIGEST }}"
+          printf 'MariaDB Base Digest:\t%s\n' "${{ steps.get_arg.outputs.OFFICIALbaseDIGEST }}"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -42,14 +61,40 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push
+      - name: Build and push - ALPINE
+        if: ${{ (github.event.inputs.tags == 'bld_alpine') || (github.event.inputs.tags == 'bld_all') }}
         uses: docker/build-push-action@v6
         with:
+          build-args: |
+            baseDIGEST=${{ steps.get_arg.outputs.ALPINEbaseDIGEST }}
+            baseIMAGE=${{ env.ALPINEbaseIMAGE }}
+            baseTAG=${{ env.ALPINEbaseTAG }}
+            dateTime=${{ steps.get_arg.outputs.dateTime }}
+            imageRevision=${{ steps.get_arg.outputs.imageRevision }}
+            mariadbVersion=${{ steps.get_arg.outputs.ALPINEmariadbVersion }}
+          no-cache: true
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.imageNAME }}:alpine
+            ghcr.io/${{ github.repository }}:${{ env.latestTAG }}
+            ghcr.io/${{ github.repository }}:alpine
+      - name: Build and push - OFFICIAL
+        if: ${{ (github.event.inputs.tags == 'bld_official') || (github.event.inputs.tags == 'bld_all') }}
+        uses: docker/build-push-action@v6
+        with:
+          build-args: |
+            baseDIGEST=${{ steps.get_arg.outputs.OFFICIALbaseDIGEST }}
+            baseIMAGE=${{ env.OFFICIALbaseIMAGE }}
+            baseTAG=${{ env.OFFICIALbaseTAG }}
+            dateTime=${{ steps.get_arg.outputs.dateTime }}
+            imageRevision=${{ steps.get_arg.outputs.imageRevision }}
+            mariadbVersion=${{ steps.get_arg.outputs.OFFICIALmariadbVersion }}
           no-cache: true
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.imageNAME }}:${{ env.latestTAG }}
-            ghcr.io/${{ github.repository }}:${{ env.latestTAG }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.imageNAME }}:official
+            ghcr.io/${{ github.repository }}:official
       - name: Send mail
         if: github.event_name == 'workflow_dispatch'
         uses: dawidd6/action-send-mail@v5
@@ -82,3 +127,7 @@ jobs:
     env:
       imageNAME: mariadb-epglv
       latestTAG: latest
+      ALPINEbaseIMAGE: alpine
+      ALPINEbaseTAG: latest
+      OFFICIALbaseIMAGE: mariadb
+      OFFICIALbaseTAG: latest

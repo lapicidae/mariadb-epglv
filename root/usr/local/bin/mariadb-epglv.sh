@@ -18,18 +18,25 @@ echo '
 
 
 ## init locales ##
-if [ -n "$LANG" ];then
-	readarray -t LOCALE < <(locale -a 2>/dev/null)
-	if [[ ! "${LOCALE[*]}" =~ ${LANG:0:6} ]]; then	# use only first 6 letters of $LANG
-		locale-gen de_DE.UTF-8 "$LANG"
-		update-locale LANG="$LANG" LANGUAGE="$(echo "$LANG" | cut -d "." -f 1):$(echo "$LANG" | cut -d "_" -f 1)"
+if ! [[ "$(grep -E ^ID= /etc/os-release)" =~ 'alpine' ]]; then
+	if [ -n "$LANG" ];then
+		readarray -t LOCALE < <(locale -a 2>/dev/null)
+		if [[ ! "${LOCALE[*]}" =~ ${LANG:0:6} ]]; then	# use only first 6 letters of $LANG
+			locale-gen de_DE.UTF-8 "$LANG"
+			update-locale LANG="$LANG" LANGUAGE="$(echo "$LANG" | cut -d "." -f 1):$(echo "$LANG" | cut -d "_" -f 1)"
+		fi
 	fi
 fi
 
 
 
 ## recommended configuration ##
-cnf="/etc/mysql/mariadb.conf.d/epglv.cnf"
+if [[ "$(grep -E ^ID= /etc/os-release)" =~ 'alpine' ]]; then
+	cnf='/etc/my.cnf.d/epglv.cnf'
+else
+	cnf='/etc/mysql/mariadb.conf.d/epglv.cnf'
+fi
+
 
 # defaults
 epglv_innodb_lock_wait_timeout=${RCMD_INNODB_LOCK_WAIT_TIMEOUT:-"300"}

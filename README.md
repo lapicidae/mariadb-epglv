@@ -19,10 +19,17 @@ Slightly modified [MariaDB (latest)](https://hub.docker.com/_/mariadb?tab=tags) 
 * creates [epgd database](root/docker-entrypoint-initdb.d/mysql-first-time.sql) automatically on first run
 
 ### *Note*
-The image is automatically rebuilt when any of the following sources receive an update:
+The images are automatically rebuilt when any of the following sources receive an update:
 
-* [MariaDB](https://hub.docker.com/_/mariadb?tab=tags) Official Docker Image - latest
+* [MariaDB](https://hub.docker.com/_/mariadb) Official Docker Image - latest
+* [Alpine Linux](https://hub.docker.com/_/alpine) Official Docker Image - latest
 * [vdr-epg-daemon](https://github.com/horchi/vdr-epg-daemon) GitHub repository
+
+
+## Supported tags
+
+* official, latest ≙ based on the official [MariaDB](https://hub.docker.com/_/mariadb/tags?name=latest) image
+* alpine ≙ based on the [Alpine Linux](https://hub.docker.com/_/alpine/tags?name=latest) image *(usually contains an older [MariaDB version](https://pkgs.alpinelinux.org/package/edge/main/x86_64/mariadb))*
 
 
 ## Getting Started
