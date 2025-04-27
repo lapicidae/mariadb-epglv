@@ -42,7 +42,6 @@ if [ "$baseIMAGE" = 'alpine' ]; then
 		mariadb-backup
 		mariadb-client
 		mariadb-server-utils
-		musl-locales
 		pwgen
 		socat
 		tzdata
@@ -54,6 +53,7 @@ if [ "$baseIMAGE" = 'alpine' ]; then
 		make
 		mariadb-dev
 		musl-dev
+		patch
 		python3-dev
 	)
 
@@ -136,8 +136,13 @@ else
 	git -c advice.detachedHead=false clone "$epgdREPO" --single-branch --branch "$(git ls-remote --tags --sort=-version:refname --refs "$epgdREPO" | head -n 1 | cut -d/ -f3)" vdr-epg-daemon
 fi
 cd vdr-epg-daemon/epglv || exit 1
-sed -i "s/^MYSQL_PLGDIR :=.*/MYSQL_PLGDIR := ${mariadbPLGDIR//\//\\/}/g" Makefile
-make all
+if [ "$baseIMAGE" = 'alpine' ]; then
+	patch -p1 -i /tmp/epglv_utf8.patch -d /tmp/vdr-epg-daemon
+	make -f Makefile.alpine
+else
+	sed -i "s/^MYSQL_PLGDIR :=.*/MYSQL_PLGDIR := ${mariadbPLGDIR//\//\\/}/g" Makefile
+	make all
+fi
 make install
 
 _ntfy 'change permissions'
