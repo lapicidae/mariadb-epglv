@@ -79,7 +79,6 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.imageNAME }}:alpine
-            ghcr.io/${{ github.repository }}:${{ env.latestTAG }}
             ghcr.io/${{ github.repository }}:alpine
       - name: Build and push - OFFICIAL
         if: ${{ (github.event.inputs.tags == 'bld_official') || (github.event.inputs.tags == 'bld_all') }}
@@ -97,6 +96,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.imageNAME }}:${{ env.latestTAG }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.imageNAME }}:official
+            ghcr.io/${{ github.repository }}:${{ env.latestTAG }}
             ghcr.io/${{ github.repository }}:official
       - name: Send mail
         if: github.event_name == 'workflow_dispatch'

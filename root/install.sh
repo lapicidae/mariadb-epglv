@@ -12,6 +12,7 @@ epgdREPO=${epgdREPO:-"https://github.com/horchi/vdr-epg-daemon.git"}
 epgdVersion=${epgdVersion:-"unknown"}
 baseIMAGE=${baseIMAGE:-"alpine"}
 baseTAG=${baseTAG:-"latest"}
+mariadbVersion=${mariadbVersion:-"unknown"}
 LANG=${LANG:-"en_US.UTF-8"}
 
 
@@ -156,15 +157,25 @@ if [ "$baseIMAGE" = 'alpine' ]; then
 	printf "[mariadb]\nhost-cache-size=0\nskip-name-resolve\n" > /etc/my.cnf.d/05-skipcache.cnf
 fi
 
-# if [ "$baseIMAGE" = 'alpine' ]; then
-# 	_ntfy 'configuration'
-# 	sed -i '/\[client-server\]/a\socket = /run/mysqld/mysqld.sock' /etc/my.cnf
-# fi
+if [ "$baseIMAGE" = 'alpine' ]; then
+	_ntfy 'configuration'
+	# sed -i '/\[client-server\]/a\socket = /run/mysqld/mysqld.sock' /etc/my.cnf
+	sed -i '/^skip-networking/ s/./#&/' /etc/my.cnf.d/mariadb-server.cnf
+
+	printf '%s\n%s\n%s\n%s\n%s\n\n' \
+	  '# this is only for the mariadbd daemon' \
+	  '[mariadbd]' \
+	  'pid-file=/run/mysqld/mysqld.pid' \
+	  'basedir=/usr' \
+	  'expire_logs_days=10 ' \
+	>> '/etc/my.cnf.d/mariadb-server.cnf'
+fi
 
 if [ "$baseIMAGE" = 'alpine' ]; then
 	_ntfy 'entrypoint & healthcheck'
 	wget -O /usr/local/bin/docker-entrypoint.sh https://github.com/MariaDB/mariadb-docker/raw/refs/heads/master/docker-entrypoint.sh
 	chmod 755 /usr/local/bin/docker-entrypoint.sh
+	sed -i "s/%%MARIADB_VERSION_BASIC%%/${mariadbVersion}/g" /usr/local/bin/docker-entrypoint.sh
 	wget -O /usr/local/bin/healthcheck.sh https://github.com/MariaDB/mariadb-docker/raw/refs/heads/master/healthcheck.sh
 	chmod 755 /usr/local/bin/healthcheck.sh
 fi
