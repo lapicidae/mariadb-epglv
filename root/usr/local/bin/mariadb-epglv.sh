@@ -66,9 +66,9 @@ if [ "$EPGD_RECOMMEND" != "false" ]; then
 
 	if [ -z "$RCMD_INNODB_BUFFER_POOL_SIZE" ]; then
 		if [ -r /sys/fs/cgroup/memory.max ]; then
-			epglv_innodb_buffer_pool_size=$(awk '{ print int($1*30/100); }' /sys/fs/cgroup/memory.max)		# 30% of allocated RAM
+			epglv_innodb_buffer_pool_size=$(awk '{ print int($1*50/100); }' /sys/fs/cgroup/memory.max)		# 50% of allocated RAM
 		else
-			epglv_innodb_buffer_pool_size=$(awk '/^Mem/ {print int($2*30/100);}' <(free --bytes))			# 30% of available RAM
+			epglv_innodb_buffer_pool_size=$(awk '/^Mem/ {print int($2*50/100);}' <(free -b))				# 50% of available RAM
 		fi
 		if [[ "$epglv_innodb_buffer_pool_size" =~ ^[0-9]+$ ]] && [ "$epglv_innodb_buffer_pool_size" -gt "134217728" ]; then	# if var is an integer and greater than the default value
 			echo "innodb_buffer_pool_size=$epglv_innodb_buffer_pool_size" >> $cnf
