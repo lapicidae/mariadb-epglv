@@ -81,6 +81,9 @@ elif [ "$baseIMAGE" = 'mariadb' ]; then
 	removePKG="apt-get purge -qy --auto-remove"
 	mariadbPLGDIR='/usr/lib/mysql/plugin'
 	_ntfy 'upgrade'
+	if ! stat -c "%a" '/tmp' | grep -q '1777'; then		# Workaround for apt GPG error
+		chmod 1777 /tmp
+	fi
 	apt-get update -qq
 else
 	printf '\e[31;1;2m!!! WRONG BASE IMAGE !!!\e[m\n'
