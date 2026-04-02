@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Commit Hash
         id: c_hash
-        uses: prompt/actions-commit-hash@v3
+        uses: prompt/actions-commit-hash@v4
       - name: Build Arguments
         id: get_arg
         run: |
