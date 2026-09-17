@@ -77,7 +77,7 @@ elif [ "$baseIMAGE" = 'mariadb' ]; then
 	)
 
 	export DEBIAN_FRONTEND="noninteractive"
-	installPKG="apt-get install -qy"
+	installPKG="apt-get install -qy --no-install-recommends"
 	removePKG="apt-get purge -qy --auto-remove"
 	mariadbPLGDIR='/usr/lib/mysql/plugin'
 	_ntfy 'upgrade'
@@ -106,9 +106,22 @@ $installPKG "${buildPKG[@]}"
 
 if [ "$baseIMAGE" = 'mariadb' ]; then
 	_ntfy 'locale'
-	localedef -i "$(echo "$LANG" | cut -d "." -f 1)" -c -f "$(echo "$LANG" | cut -d "." -f 2)" -A /usr/share/locale/locale.alias "$LANG"
-	locale-gen "$LANG"
-	update-locale LANG="$LANG" LANGUAGE="$(echo "$LANG" | cut -d "." -f 1):$(echo "$LANG" | cut -d "_" -f 1)"
+
+	# Extract locale components
+	lang_name="${LANG%%.*}"      # e.g. "de_DE" (locale base name)
+	lang_charmap="${LANG#*.}"    # e.g. "UTF-8" (character set encoding)
+	lang_language="${LANG%%_*}"  # e.g. "de"    (language code)
+
+	locale_alias='/usr/share/locale/locale.alias'
+
+	if [ -f "$locale_alias" ]; then
+		localedef -i "${lang_name}" -c -f "${lang_charmap}" -A "${locale_alias}" "${LANG}"
+	else
+		localedef -i "${lang_name}" -c -f "${lang_charmap}" "${LANG}"
+	fi
+
+	locale-gen "${LANG}"
+	update-locale LANG="${LANG}" LANGUAGE="${lang_name}:${lang_language}"
 fi
 
 # _ntfy 'bash tweaks'
