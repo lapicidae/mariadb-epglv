@@ -10,8 +10,6 @@ services:
       - MARIADB_ALLOW_EMPTY_ROOT_PASSWORD=true
       - EPGD_RECOMMEND=yes
       - TZ=Europe/Berlin
-    command: mysqld
-    entrypoint: /mariadb-epglv.sh
     network_mode: bridge
     ports:
       - '3306:3306'

@@ -41,6 +41,7 @@ fi
 # defaults
 epglv_innodb_lock_wait_timeout=${RCMD_INNODB_LOCK_WAIT_TIMEOUT:-"300"}
 epglv_innodb_rollback_on_timeout=${RCMD_INNODB_ROLLBACK_ON_TIMEOUT:-"1"}
+epglv_innodb_snapshot_isolation=${RCMD_INNODB_SNAPSHOT_ISOLATION:-"0"}
 epglv_innodb_use_native_aio=${RCMD_INNODB_USE_NATIVE_AIO:-"0"}
 epglv_table_definition_cache=${RCMD_TABLE_DEFINITION_CACHE:-"856"}
 epglv_transaction_isolation=${RCMD_TRANSACTION_ISOLATION:-"READ-COMMITTED"}
@@ -49,6 +50,7 @@ if [ "$EPGD_RECOMMEND" != "false" ]; then
 	echo "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄⚟ Recommend Settings ⚞┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄"
 	printf "%-30s%s\n" "innodb_lock_wait_timeout:" "$epglv_innodb_lock_wait_timeout"
 	printf "%-30s%s\n" "innodb_rollback_on_timeout:" "$epglv_innodb_rollback_on_timeout"
+	printf "%-30s%s\n" "innodb_snapshot_isolation:" "$epglv_innodb_snapshot_isolation"
 	printf "%-30s%s\n" "innodb_use_native_aio:" "$epglv_innodb_use_native_aio"
 	printf "%-30s%s\n" "table_definition_cache:" "$epglv_table_definition_cache"
 	printf "%-30s%s\n" "transaction_isolation:" "$epglv_transaction_isolation"
@@ -59,6 +61,7 @@ if [ "$EPGD_RECOMMEND" != "false" ]; then
 	[mariadb]
 	innodb_lock_wait_timeout=$epglv_innodb_lock_wait_timeout
 	innodb_rollback_on_timeout=$epglv_innodb_rollback_on_timeout
+	loose_innodb_snapshot_isolation=$epglv_innodb_snapshot_isolation
 	innodb_use_native_aio=$epglv_innodb_use_native_aio
 	table_definition_cache=$epglv_table_definition_cache
 	transaction_isolation=$epglv_transaction_isolation
