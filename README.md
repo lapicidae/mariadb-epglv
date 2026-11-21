@@ -20,14 +20,23 @@ Slightly modified [MariaDB (latest)](https://hub.docker.com/_/mariadb?tab=tags) 
 
 The images are automatically rebuilt when any of the following sources receive an update:
 
-- [MariaDB](https://hub.docker.com/_/mariadb) Official Docker Image - latest
+- [MariaDB](https://hub.docker.com/_/mariadb) Official Docker Image - latest & lts
 - [Alpine Linux](https://hub.docker.com/_/alpine) Official Docker Image - latest
 - [vdr-epg-daemon](https://github.com/horchi/vdr-epg-daemon) GitHub repository
 
-## Supported tags
+## Image Tags
 
-- official, latest ≙ based on the official [MariaDB](https://hub.docker.com/_/mariadb/tags?name=latest) image
-- alpine ≙ based on the [Alpine Linux](https://hub.docker.com/_/alpine/tags?name=latest) image _(usually contains an older [MariaDB version](https://pkgs.alpinelinux.org/package/edge/main/x86_64/mariadb))_
+Images are published to [GitHub Container Registry](https://ghcr.io/lapicidae/mariadb-epglv) (`ghcr.io/lapicidae/mariadb-epglv`) and [Docker Hub](https://hub.docker.com/r/lapicidae/mariadb-epglv) (`lapicidae/mariadb-epglv`).
+
+|                       Tag                       | Description                                                                                                                                                                                             |
+| :---------------------------------------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|                    `latest`                     | Latest stable release based on the official [MariaDB](https://hub.docker.com/_/mariadb/tags?name=latest) image (always points to the highest MariaDB version)                                           |
+|                    `mariadb`                    | Latest stable release based on the official [MariaDB](https://hub.docker.com/_/mariadb/tags?name=latest) image with the latest `epglv` release tag                                                      |
+|                      `lts`                      | Long-Term Support release based on the official [MariaDB (`lts`)](https://hub.docker.com/_/mariadb/tags?name=lts) image                                                                                 |
+| `12`, `12.3`, `12.3.x` / `13`, `13.0`, `13.0.2` | Version-pinned MariaDB-based images following the MariaDB version (`<major>`, `<major>.<minor>`, `<major>.<minor>.<patch>`)                                                                             |
+|                    `alpine`                     | Stable release based on [Alpine Linux](https://hub.docker.com/_/alpine/tags?name=latest) _(usually contains an older [MariaDB version](https://pkgs.alpinelinux.org/package/edge/main/x86_64/mariadb))_ |
+|  `alpine-11`, `alpine-11.8`, `alpine-11.8.10`   | Version-pinned Alpine images following the packaged Alpine MariaDB version                                                                                                                              |
+|                      `dev`                      | Development build with `epglv` from the `vdr-epg-daemon` `master` branch (MariaDB base)                                                                                                                 |
 
 ## Getting Started
 

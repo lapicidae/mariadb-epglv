@@ -5,6 +5,7 @@ on:
       - master
     paths-ignore:
       - .gitignore
+      - AGENTS.md
       - docker-compose.yml
       - epglv-logo.svg
       - Jenkinsfile
@@ -15,50 +16,206 @@ on:
         description: 'Scenario tags'
         type: choice
         options:
-          - test
+          - dry_run
           - bld_all
           - bld_alpine
-          - bld_official
+          - bld_mariadb
+          - bld_lts
+          - bld_dev
         required: true
+      version:
+        description: 'MariaDB base tag for mariadb build (optional, default: latest)'
+        type: string
+        required: false
       trigger:
         type: string
 jobs:
   docker:
-    if: ${{ github.event.inputs.tags != 'test' }}
     runs-on: ubuntu-latest
     permissions:
       packages: write
     steps:
-      - name: Commit Hash
-        id: c_hash
-        uses: prompt/actions-commit-hash@v4
       - name: Build Arguments
         id: get_arg
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
-          printf 'dateTime=%(%Y-%m-%dT%H:%M:%S%z)T\n' >> $GITHUB_OUTPUT
-          printf 'imageRevision=%s\n' "${{ steps.c_hash.outputs.short }}" >> $GITHUB_OUTPUT
-          printf 'ALPINEbaseDIGEST=%s\n' "$(docker image pull ${{ env.ALPINEbaseIMAGE }}:${{ env.ALPINEbaseTAG }} | grep -i digest | cut -d ' ' -f 2)" >> $GITHUB_OUTPUT
-          printf 'OFFICIALbaseDIGEST=%s\n' "$(docker image pull ${{ env.OFFICIALbaseIMAGE }}:${{ env.OFFICIALbaseTAG }} | grep -i digest | cut -d ' ' -f 2)" >> $GITHUB_OUTPUT
-          printf 'ALPINEmariadbVersion=%s\n' "$(docker run --rm ${{ env.ALPINEbaseIMAGE }}:${{ env.ALPINEbaseTAG }} sh -c "apk update --quiet && apk info mariadb | head -n 1 | cut -d '-' -f 2 | tr -d '\n'")" >> $GITHUB_OUTPUT
-          printf 'OFFICIALmariadbVersion=%s\n' "$(docker run --rm ${{ env.OFFICIALbaseIMAGE }}:${{ env.OFFICIALbaseTAG }} sh -c "mariadbd --version | cut -d ' ' -f4 | cut -d '-' -f 1")" >> $GITHUB_OUTPUT
+          epgdREPO='https://github.com/horchi/vdr-epg-daemon.git'
+          epgdHISTORY='https://raw.githubusercontent.com/horchi/vdr-epg-daemon/master/HISTORY.h'
+
+          _history_ver() {
+              awk -F'"' '/^#define[[:space:]]+_VERSION/ {print $2; exit}' "$@"
+          }
+
+          remoteTags="$(git ls-remote --tags --sort=-version:refname --refs "$epgdREPO")"
+          latestUpstream="$(printf '%s\n' "$remoteTags" | head -n 1 | cut -d/ -f3)"
+          if [ -z "$latestUpstream" ]; then
+              latestUpstream="$(curl -fsSL "$epgdHISTORY" | _history_ver)"
+          fi
+          matchLine=''
+          if [ -n "$latestUpstream" ]; then
+              matchLine="$(printf '%s\n' "$remoteTags" | awk -v tag="$latestUpstream" '$2 == "refs/tags/" tag {print $1 "\t" $2; exit}')"
+          fi
+          if [ -n "$matchLine" ]; then
+              epgdRevision="${matchLine%%$'\t'*}"
+              epgdVersion="${matchLine##*/}"
+          else
+              epgdVersion="${latestUpstream:-unknown}"
+              epgdRevision="$(git ls-remote "$epgdREPO" HEAD | cut -f 1)"
+          fi
+
+          epgdDevVersion=''
+          epgdDevRevision=''
+          if [[ "${{ github.event.inputs.tags }}" =~ ^(bld_dev|bld_all|dry_run)$ ]]; then
+              gitDIR=$(mktemp -d --suffix '_epgdGIT')
+              git clone --quiet "$epgdREPO" "$gitDIR"
+              cd "$gitDIR" || exit 1
+              epgdDevVersion="$(git describe --tags 2>/dev/null)"
+              if [ -z "$epgdDevVersion" ] && [ -f HISTORY.h ]; then
+                  epgdDevVersion="$(_history_ver HISTORY.h)"
+              fi
+              epgdDevRevision="$(git log --pretty=format:'%H' -n 1)"
+              cd "$OLDPWD" || exit 1
+              rm -rf "$gitDIR"
+          fi
+
+          mariadbBaseTag="${{ github.event.inputs.version }}"
+          mariadbBaseTag="${mariadbBaseTag:-${MARIADBbaseTAG}}"
+
+          ALPINEbaseDIGEST=''
+          ALPINEversion=''
+          if [[ "${{ github.event.inputs.tags }}" =~ ^(bld_alpine|bld_all|dry_run)$ ]]; then
+              ALPINEbaseDIGEST="$(docker buildx imagetools inspect --format '{{.Manifest.Digest}}' "${ALPINEbaseIMAGE}:${ALPINEbaseTAG}")"
+              ALPINEversion="$(docker run --rm --pull=always "${ALPINEbaseIMAGE}:${ALPINEbaseTAG}" sh -c "apk update --quiet && apk info mariadb | head -n 1 | cut -d '-' -f 2 | tr -d '\n'")"
+          fi
+
+          MARIADBbaseDIGEST=''
+          MARIADBversion=''
+          isLatest='false'
+          if [[ "${{ github.event.inputs.tags }}" =~ ^(bld_mariadb|bld_dev|bld_all|dry_run)$ ]]; then
+              MARIADBbaseDIGEST="$(docker buildx imagetools inspect --format '{{.Manifest.Digest}}' "${MARIADBbaseIMAGE}:${mariadbBaseTag}")"
+              MARIADBversion="$(docker run --rm --pull=always "${MARIADBbaseIMAGE}:${mariadbBaseTag}" sh -c "mariadbd --version | cut -d ' ' -f4 | cut -d '-' -f 1")"
+              latestUpstreamMariaDB="$MARIADBversion"
+              if [ "$mariadbBaseTag" != "$MARIADBbaseTAG" ]; then
+                  latestUpstreamMariaDB="$(docker run --rm --pull=always "${MARIADBbaseIMAGE}:${MARIADBbaseTAG}" sh -c "mariadbd --version | cut -d ' ' -f4 | cut -d '-' -f 1")"
+              fi
+              highestVersion="$(
+                  {
+                      printf '%s\n' "${latestUpstreamMariaDB#v}" "${MARIADBversion#v}"
+                      if [ -n "$DOCKERHUB_USERNAME" ]; then
+                          curl -fsSL "https://hub.docker.com/v2/repositories/${DOCKERHUB_USERNAME}/${imageNAME}/tags?page_size=100" 2>/dev/null | jq -r '.results[]?.name // empty' | sed 's/^v//' | grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' || true
+                      fi
+                  } | sort -uV | tail -n 1
+              )"
+              if [ "${MARIADBversion#v}" = "$highestVersion" ]; then
+                  isLatest='true'
+              fi
+          fi
+
+          LTSbaseDIGEST=''
+          LTSversion=''
+          if [[ "${{ github.event.inputs.tags }}" =~ ^(bld_lts|bld_all|dry_run)$ ]]; then
+              LTSbaseDIGEST="$(docker buildx imagetools inspect --format '{{.Manifest.Digest}}' "${MARIADBbaseIMAGE}:${LTSbaseTAG}")"
+              LTSversion="$(docker run --rm --pull=always "${MARIADBbaseIMAGE}:${LTSbaseTAG}" sh -c "mariadbd --version | cut -d ' ' -f4 | cut -d '-' -f 1")"
+          fi
+
+          printf 'dateTime=%s\n' "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+          printf 'mariadbBaseTag=%s\n' "${mariadbBaseTag}" >> "$GITHUB_OUTPUT"
+          printf 'epgdVersion=%s\n' "${epgdVersion}" >> "$GITHUB_OUTPUT"
+          printf 'epgdRevision=%s\n' "${epgdRevision}" >> "$GITHUB_OUTPUT"
+          printf 'epgdDevVersion=%s\n' "${epgdDevVersion}" >> "$GITHUB_OUTPUT"
+          printf 'epgdDevRevision=%s\n' "${epgdDevRevision}" >> "$GITHUB_OUTPUT"
+          printf 'ALPINEbaseDIGEST=%s\n' "${ALPINEbaseDIGEST}" >> "$GITHUB_OUTPUT"
+          printf 'ALPINEversion=%s\n' "${ALPINEversion}" >> "$GITHUB_OUTPUT"
+          printf 'MARIADBbaseDIGEST=%s\n' "${MARIADBbaseDIGEST}" >> "$GITHUB_OUTPUT"
+          printf 'MARIADBversion=%s\n' "${MARIADBversion}" >> "$GITHUB_OUTPUT"
+          printf 'LTSbaseDIGEST=%s\n' "${LTSbaseDIGEST}" >> "$GITHUB_OUTPUT"
+          printf 'LTSversion=%s\n' "${LTSversion}" >> "$GITHUB_OUTPUT"
+          printf 'isLatest=%s\n' "${isLatest}" >> "$GITHUB_OUTPUT"
+      - name: Docker Metadata - ALPINE
+        id: meta_alpine
+        if: ${{ (github.event.inputs.tags == 'bld_alpine') || (github.event.inputs.tags == 'bld_all') || (github.event.inputs.tags == 'dry_run') }}
+        uses: docker/metadata-action@v6
+        with:
+          flavor: latest=false
+          images: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.imageNAME }}
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{major}},value=${{ steps.get_arg.outputs.ALPINEversion }},prefix=alpine-
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.get_arg.outputs.ALPINEversion }},prefix=alpine-
+            type=semver,pattern={{version}},value=${{ steps.get_arg.outputs.ALPINEversion }},prefix=alpine-
+            type=raw,value=alpine
+      - name: Docker Metadata - MARIADB
+        id: meta_mariadb
+        if: ${{ (github.event.inputs.tags == 'bld_mariadb') || (github.event.inputs.tags == 'bld_all') || (github.event.inputs.tags == 'dry_run') }}
+        uses: docker/metadata-action@v6
+        with:
+          flavor: latest=false
+          images: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.imageNAME }}
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{major}},value=${{ steps.get_arg.outputs.MARIADBversion }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.get_arg.outputs.MARIADBversion }}
+            type=semver,pattern={{version}},value=${{ steps.get_arg.outputs.MARIADBversion }}
+            type=raw,value=mariadb,enable=${{ steps.get_arg.outputs.isLatest }}
+            type=raw,value=${{ env.latestTAG }},enable=${{ steps.get_arg.outputs.isLatest }}
+      - name: Docker Metadata - LTS
+        id: meta_lts
+        if: ${{ (github.event.inputs.tags == 'bld_lts') || (github.event.inputs.tags == 'bld_all') || (github.event.inputs.tags == 'dry_run') }}
+        uses: docker/metadata-action@v6
+        with:
+          flavor: latest=false
+          images: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.imageNAME }}
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{major}},value=${{ steps.get_arg.outputs.LTSversion }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.get_arg.outputs.LTSversion }}
+            type=semver,pattern={{version}},value=${{ steps.get_arg.outputs.LTSversion }}
+            type=raw,value=lts
+      - name: Docker Metadata - DEV
+        id: meta_dev
+        if: ${{ (github.event.inputs.tags == 'bld_dev') || (github.event.inputs.tags == 'bld_all') || (github.event.inputs.tags == 'dry_run') }}
+        uses: docker/metadata-action@v6
+        with:
+          flavor: latest=false
+          images: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.imageNAME }}
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=dev
       - name: Info
         run: |
           printf '<<<<<<<<< BUILD ARGUMENTS >>>>>>>>>\n'
           printf 'Build Timestamp:\t%s\n' "${{ steps.get_arg.outputs.dateTime }}"
-          printf 'MariaDB Version:\tAlpine image (%s) / MariaDB image (%s)\n' "${{ steps.get_arg.outputs.ALPINEmariadbVersion }}" "${{ steps.get_arg.outputs.OFFICIALmariadbVersion }}"
-          printf 'Image Revision:\t\t%s\n' "${{ steps.get_arg.outputs.imageRevision }}"
+          printf 'Image Revision:\t\t%s\n' "${{ github.sha }}"
+          printf 'MariaDB Version:\tAlpine (%s) / LTS (%s) / MariaDB %s (%s, latest: %s)\n' "${{ steps.get_arg.outputs.ALPINEversion }}" "${{ steps.get_arg.outputs.LTSversion }}" "${{ steps.get_arg.outputs.mariadbBaseTag }}" "${{ steps.get_arg.outputs.MARIADBversion }}" "${{ steps.get_arg.outputs.isLatest }}"
+          printf 'epglv Version:\t\t%s (%s)\n' "${{ steps.get_arg.outputs.epgdVersion }}" "${{ steps.get_arg.outputs.epgdRevision }}"
+          printf 'epglv Dev Version:\t%s (%s)\n' "${{ steps.get_arg.outputs.epgdDevVersion }}" "${{ steps.get_arg.outputs.epgdDevRevision }}"
           printf 'Alpine Base Digest:\t%s\n' "${{ steps.get_arg.outputs.ALPINEbaseDIGEST }}"
-          printf 'MariaDB Base Digest:\t%s\n' "${{ steps.get_arg.outputs.OFFICIALbaseDIGEST }}"
+          printf 'LTS Base Digest:\t%s\n' "${{ steps.get_arg.outputs.LTSbaseDIGEST }}"
+          printf 'MariaDB Base Digest:\t%s\n' "${{ steps.get_arg.outputs.MARIADBbaseDIGEST }}"
+          printf '\n<<<<<<<<< GENERATED TAGS >>>>>>>>>\n'
+          printf '[ALPINE]\n%s\n' "${{ steps.meta_alpine.outputs.tags }}"
+          printf '[MARIADB]\n%s\n' "${{ steps.meta_mariadb.outputs.tags }}"
+          printf '[LTS]\n%s\n' "${{ steps.meta_lts.outputs.tags }}"
+          printf '[DEV]\n%s\n' "${{ steps.meta_dev.outputs.tags }}"
       - name: Set up QEMU
+        if: ${{ github.event.inputs.tags != 'dry_run' }}
         uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
+        if: ${{ github.event.inputs.tags != 'dry_run' }}
         uses: docker/setup-buildx-action@v4
       - name: Login to DockerHub
+        if: ${{ github.event.inputs.tags != 'dry_run' }}
         uses: docker/login-action@v4.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Login to GitHub Container Registry
+        if: ${{ github.event.inputs.tags != 'dry_run' }}
         uses: docker/login-action@v4.8.0
         with:
           registry: ghcr.io
@@ -69,37 +226,99 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           build-args: |
+            EPGD_DEV=false
             baseDIGEST=${{ steps.get_arg.outputs.ALPINEbaseDIGEST }}
             baseIMAGE=${{ env.ALPINEbaseIMAGE }}
             baseTAG=${{ env.ALPINEbaseTAG }}
             dateTime=${{ steps.get_arg.outputs.dateTime }}
-            imageRevision=${{ steps.get_arg.outputs.imageRevision }}
-            mariadbVersion=${{ steps.get_arg.outputs.ALPINEmariadbVersion }}
+            epgdRevision=${{ steps.get_arg.outputs.epgdRevision }}
+            epgdVersion=${{ steps.get_arg.outputs.epgdVersion }}
+            imageRevision=${{ github.sha }}
+            mariadbVersion=${{ steps.get_arg.outputs.ALPINEversion }}
+          annotations: |
+            ${{ env.commonANNOTATIONS }}
+            index,manifest:org.opencontainers.image.base.digest=${{ steps.get_arg.outputs.ALPINEbaseDIGEST }}
+            index,manifest:org.opencontainers.image.base.name=docker.io/library/${{ env.ALPINEbaseIMAGE }}:${{ env.ALPINEbaseTAG }}
+            index,manifest:org.opencontainers.image.created=${{ steps.get_arg.outputs.dateTime }}
+            index,manifest:org.opencontainers.image.revision=${{ github.sha }}
+            index,manifest:org.opencontainers.image.version=${{ steps.get_arg.outputs.ALPINEversion }}
           no-cache: true
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.imageNAME }}:alpine
-            ghcr.io/${{ github.repository }}:alpine
-      - name: Build and push - OFFICIAL
-        if: ${{ (github.event.inputs.tags == 'bld_official') || (github.event.inputs.tags == 'bld_all') }}
+          tags: ${{ steps.meta_alpine.outputs.tags }}
+      - name: Build and push - MARIADB
+        if: ${{ (github.event.inputs.tags == 'bld_mariadb') || (github.event.inputs.tags == 'bld_all') }}
         uses: docker/build-push-action@v7
         with:
           build-args: |
-            baseDIGEST=${{ steps.get_arg.outputs.OFFICIALbaseDIGEST }}
-            baseIMAGE=${{ env.OFFICIALbaseIMAGE }}
-            baseTAG=${{ env.OFFICIALbaseTAG }}
+            EPGD_DEV=false
+            baseDIGEST=${{ steps.get_arg.outputs.MARIADBbaseDIGEST }}
+            baseIMAGE=${{ env.MARIADBbaseIMAGE }}
+            baseTAG=${{ steps.get_arg.outputs.mariadbBaseTag }}
             dateTime=${{ steps.get_arg.outputs.dateTime }}
-            imageRevision=${{ steps.get_arg.outputs.imageRevision }}
-            mariadbVersion=${{ steps.get_arg.outputs.OFFICIALmariadbVersion }}
+            epgdRevision=${{ steps.get_arg.outputs.epgdRevision }}
+            epgdVersion=${{ steps.get_arg.outputs.epgdVersion }}
+            imageRevision=${{ github.sha }}
+            mariadbVersion=${{ steps.get_arg.outputs.MARIADBversion }}
+          annotations: |
+            ${{ env.commonANNOTATIONS }}
+            index,manifest:org.opencontainers.image.base.digest=${{ steps.get_arg.outputs.MARIADBbaseDIGEST }}
+            index,manifest:org.opencontainers.image.base.name=docker.io/library/${{ env.MARIADBbaseIMAGE }}:${{ steps.get_arg.outputs.mariadbBaseTag }}
+            index,manifest:org.opencontainers.image.created=${{ steps.get_arg.outputs.dateTime }}
+            index,manifest:org.opencontainers.image.revision=${{ github.sha }}
+            index,manifest:org.opencontainers.image.version=${{ steps.get_arg.outputs.MARIADBversion }}
           no-cache: true
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.imageNAME }}:${{ env.latestTAG }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.imageNAME }}:official
-            ghcr.io/${{ github.repository }}:${{ env.latestTAG }}
-            ghcr.io/${{ github.repository }}:official
+          tags: ${{ steps.meta_mariadb.outputs.tags }}
+      - name: Build and push - LTS
+        if: ${{ (github.event.inputs.tags == 'bld_lts') || (github.event.inputs.tags == 'bld_all') }}
+        uses: docker/build-push-action@v7
+        with:
+          build-args: |
+            EPGD_DEV=false
+            baseDIGEST=${{ steps.get_arg.outputs.LTSbaseDIGEST }}
+            baseIMAGE=${{ env.MARIADBbaseIMAGE }}
+            baseTAG=${{ env.LTSbaseTAG }}
+            dateTime=${{ steps.get_arg.outputs.dateTime }}
+            epgdRevision=${{ steps.get_arg.outputs.epgdRevision }}
+            epgdVersion=${{ steps.get_arg.outputs.epgdVersion }}
+            imageRevision=${{ github.sha }}
+            mariadbVersion=${{ steps.get_arg.outputs.LTSversion }}
+          annotations: |
+            ${{ env.commonANNOTATIONS }}
+            index,manifest:org.opencontainers.image.base.digest=${{ steps.get_arg.outputs.LTSbaseDIGEST }}
+            index,manifest:org.opencontainers.image.base.name=docker.io/library/${{ env.MARIADBbaseIMAGE }}:${{ env.LTSbaseTAG }}
+            index,manifest:org.opencontainers.image.created=${{ steps.get_arg.outputs.dateTime }}
+            index,manifest:org.opencontainers.image.revision=${{ github.sha }}
+            index,manifest:org.opencontainers.image.version=${{ steps.get_arg.outputs.LTSversion }}
+          no-cache: true
+          push: true
+          tags: ${{ steps.meta_lts.outputs.tags }}
+      - name: Build and push - DEV
+        if: ${{ (github.event.inputs.tags == 'bld_dev') || (github.event.inputs.tags == 'bld_all') }}
+        uses: docker/build-push-action@v7
+        with:
+          build-args: |
+            EPGD_DEV=true
+            baseDIGEST=${{ steps.get_arg.outputs.MARIADBbaseDIGEST }}
+            baseIMAGE=${{ env.MARIADBbaseIMAGE }}
+            baseTAG=${{ steps.get_arg.outputs.mariadbBaseTag }}
+            dateTime=${{ steps.get_arg.outputs.dateTime }}
+            epgdRevision=${{ steps.get_arg.outputs.epgdDevRevision }}
+            epgdVersion=${{ steps.get_arg.outputs.epgdDevVersion }}
+            imageRevision=${{ github.sha }}
+            mariadbVersion=${{ steps.get_arg.outputs.MARIADBversion }}
+          annotations: |
+            ${{ env.commonANNOTATIONS }}
+            index,manifest:org.opencontainers.image.base.digest=${{ steps.get_arg.outputs.MARIADBbaseDIGEST }}
+            index,manifest:org.opencontainers.image.base.name=docker.io/library/${{ env.MARIADBbaseIMAGE }}:${{ steps.get_arg.outputs.mariadbBaseTag }}
+            index,manifest:org.opencontainers.image.created=${{ steps.get_arg.outputs.dateTime }}
+            index,manifest:org.opencontainers.image.revision=${{ github.sha }}
+            index,manifest:org.opencontainers.image.version=${{ steps.get_arg.outputs.MARIADBversion }}
+          no-cache: true
+          push: true
+          tags: ${{ steps.meta_dev.outputs.tags }}
       - name: Send mail
-        if: github.event_name == 'workflow_dispatch'
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tags != 'dry_run' }}
         uses: dawidd6/action-send-mail@v24
         with:
           server_address: smtp.gmail.com
@@ -128,9 +347,19 @@ jobs:
             </html>
           priority: low
     env:
+      commonANNOTATIONS: |-
+        index,manifest:org.opencontainers.image.authors=A. Hemmerle <github.com/lapicidae>
+        index,manifest:org.opencontainers.image.description=${{ github.event.repository.description || 'Slightly modified MariaDB with EPG2VDR Levenshtein distance support' }}
+        index,manifest:org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/master/README.md
+        index,manifest:org.opencontainers.image.licenses=GPL-2.0-only AND GPL-3.0-only AND GPL-3.0-or-later
+        index,manifest:org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+        index,manifest:org.opencontainers.image.title=mariadb-epglv
+        index,manifest:org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}
+        index,manifest:org.opencontainers.image.vendor=${{ github.repository_owner }}
       imageNAME: mariadb-epglv
       latestTAG: latest
       ALPINEbaseIMAGE: alpine
       ALPINEbaseTAG: latest
-      OFFICIALbaseIMAGE: mariadb
-      OFFICIALbaseTAG: latest
+      LTSbaseTAG: lts
+      MARIADBbaseIMAGE: mariadb
+      MARIADBbaseTAG: latest

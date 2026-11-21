@@ -144,12 +144,17 @@ if [ "$baseIMAGE" = 'alpine' ]; then
 fi
 ln -s /usr/local/bin/mariadb-epglv.sh /mariadb-epglv.sh
 
+if [ "$EPGD_DEV" != 'true' ] && { [ -z "$epgdVersion" ] || [ "$epgdVersion" = 'unknown' ]; }; then
+	epgdVersion="$(git ls-remote --tags --sort=-version:refname --refs "$epgdREPO" | head -n 1 | cut -d/ -f3)"
+fi
+
 _ntfy "compile & install ${epgdVersion}"
 cd /tmp || exit 1
-if [ "$EPGD_DEV" = 'true' ]; then
+if [ "$EPGD_DEV" = 'true' ] || [ -z "$epgdVersion" ] || [ "$epgdVersion" = 'unknown' ]; then
 	git clone "$epgdREPO" vdr-epg-daemon
 else
-	git -c advice.detachedHead=false clone "$epgdREPO" --single-branch --branch "$(git ls-remote --tags --sort=-version:refname --refs "$epgdREPO" | head -n 1 | cut -d/ -f3)" vdr-epg-daemon
+	git -c advice.detachedHead=false clone "$epgdREPO" --single-branch --branch "$epgdVersion" vdr-epg-daemon || \
+		git clone "$epgdREPO" vdr-epg-daemon
 fi
 cd vdr-epg-daemon/epglv || exit 1
 if [ "$baseIMAGE" = 'alpine' ]; then
